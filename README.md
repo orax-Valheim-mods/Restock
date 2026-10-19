@@ -23,9 +23,9 @@ one of these limits is reached:
   filled, and the transfer stops when your inventory has no room left;
 * the transfer never pushes you over your maximum carry weight.
 
-Once the restock succeeded, the selection is put down automatically: nothing stays
-on the cursor and the next key press needs a new template (see
-[Behaviour](#behaviour) to keep the selection instead).
+Once a template was picked, the hotkey puts it down automatically whatever the
+outcome: nothing stays on the cursor and the next key press needs a new template
+(see [Behaviour](#behaviour) to keep the selection instead).
 
 Nothing else in the container is touched, and the container is saved normally (it
 must be opened by you, which is what grants you the ownership Valheim requires).
@@ -61,7 +61,7 @@ Hotkey = R + LeftShift
 ```ini
 [Behaviour]
 
-## Put the selection down after a restock: the item stays where it was and the next key press needs a new selection. Set it to false to keep the selection and press the key again right away.
+## Put the selection down when the restock key is pressed, whatever the outcome: the item stays where it was and the next press needs a new selection. Set it to false to keep the selection and press the key again right away.
 # Setting type: System.Boolean
 # Default value: true
 DeselectAfterRestock = true
@@ -72,10 +72,12 @@ DeselectAfterRestock = true
 SelectionMode = Both
 ```
 
-`DeselectAfterRestock` puts the selected item down after a successful restock:
-nothing follows the cursor any more and a new key press reports that no item is
-selected. A transfer that moved nothing (no matching item, full inventory, weight
-reached) keeps the selection, so the same key can be pressed again right after.
+`DeselectAfterRestock` puts the selected item down when the restock key is pressed,
+whatever the outcome: nothing follows the cursor any more and the next key press
+needs a new template, even when the transfer refused to move anything (no matching
+item, full inventory, weight reached). Two cases are left alone, because there the
+mod did nothing and reports nothing: no template at all was picked, or the chest is
+owned by another player.
 
 ### Selection mode
 
