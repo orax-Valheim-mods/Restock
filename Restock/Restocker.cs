@@ -19,7 +19,7 @@ namespace Restock
             NoMatchingItems,
             NoSpace,
             TooHeavy,
-            Cancelled
+            Cancelled,
         }
 
         private static InventoryGui _boundGui;
@@ -84,7 +84,11 @@ namespace Restock
                 Result result = RestockFromContainer(gui, player, container);
                 if (result != Result.Moved && result != Result.Cancelled)
                 {
-                    player.Message(MessageHud.MessageType.Center, Message(result));
+                    string message = Message(result);
+                    if (!string.IsNullOrEmpty(message))
+                    {
+                        player.Message(MessageHud.MessageType.Center, message);
+                    }
                 }
             }
             catch (Exception ex)
@@ -411,16 +415,22 @@ namespace Restock
 
         private static string Message(Result result)
         {
+            Restock plugin = Restock.Instance;
+            if (plugin == null)
+            {
+                return string.Empty;
+            }
+
             switch (result)
             {
                 case Result.NothingSelected:
-                    return "Restock: select an item first";
+                    return plugin.MessageNothingSelected.Value;
                 case Result.NoMatchingItems:
-                    return "Restock: no matching items in the container";
+                    return plugin.MessageNoMatchingItems.Value;
                 case Result.NoSpace:
-                    return "Restock: not enough room in your inventory";
+                    return plugin.MessageNoSpace.Value;
                 case Result.TooHeavy:
-                    return "Restock: that would make you overburdened";
+                    return plugin.MessageTooHeavy.Value;
                 default:
                     return string.Empty;
             }

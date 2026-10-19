@@ -24,8 +24,22 @@ namespace Restock
 
         internal static Restock Instance { get; private set; }
 
+        private const string MessageHint = " Leave it empty to disable the message.";
+
         /// <summary>Configured key combination, e.g. "Shift + R" or "B".</summary>
         internal ConfigEntry<string> Hotkey { get; private set; }
+
+        /// <summary>Center message shown when nothing is selected.</summary>
+        internal ConfigEntry<string> MessageNothingSelected { get; private set; }
+
+        /// <summary>Center message shown when the container holds no matching item.</summary>
+        internal ConfigEntry<string> MessageNoMatchingItems { get; private set; }
+
+        /// <summary>Center message shown when the transfer stops on a full inventory.</summary>
+        internal ConfigEntry<string> MessageNoSpace { get; private set; }
+
+        /// <summary>Center message shown when the transfer stops on the weight limit.</summary>
+        internal ConfigEntry<string> MessageTooHeavy { get; private set; }
 
         /// <summary>
         ///     Parsed combination: the last entry is the key to press, the entries before
@@ -77,6 +91,35 @@ namespace Restock
 
             Hotkey.SettingChanged += (sender, args) => ParseHotkey();
             ParseHotkey();
+
+            MessageNothingSelected = Config.Bind(
+                "Messages",
+                "NothingSelected",
+                "Restock: select an item first",
+                "Shown when the hotkey is pressed without a selected item." + MessageHint
+            );
+            MessageNoMatchingItems = Config.Bind(
+                "Messages",
+                "NoMatchingItems",
+                "Restock: no matching items in the container",
+                "Shown when the container holds no item identical to the selected one."
+                    + MessageHint
+            );
+            MessageNoSpace = Config.Bind(
+                "Messages",
+                "NoSpace",
+                "Restock: not enough room in your inventory",
+                "Shown when the transfer stops because your inventory has no room left."
+                    + MessageHint
+            );
+            MessageTooHeavy = Config.Bind(
+                "Messages",
+                "TooHeavy",
+                "Restock: that would make you overburdened",
+                "Shown when the transfer stops because it would exceed your maximum "
+                    + "carry weight."
+                    + MessageHint
+            );
 
             Jotunn.Logger.LogInfo(
                 $"{PluginName} {PluginVersion} loaded (hotkey: {DescribeHotkey()})"
