@@ -9,8 +9,8 @@ into your inventory until your free slots or your maximum carry weight are used 
 1. Open a container.
 2. Select an item with a plain left click, either in the container or in your own
    inventory (the item stays on the cursor, exactly like in vanilla).
-3. Press the hotkey (default: `Shift + R`). It accepts a single key (`B`) or a key
-   combination (`Shift + R`, `Ctrl + B`, ...).
+3. Press the hotkey (default: Shift + R, written `R + LeftShift` in the
+   configuration). It accepts a single key (`B`) or a key combination.
 
 Only the items identical to the selected one are transferred, using the game's own
 stacking rule (same name, quality and world level). The transfer stops as soon as
@@ -29,23 +29,27 @@ must be opened by you, which is what grants you the ownership Valheim requires).
 
 # Configuration
 
-The hotkey is defined in `BepInEx\config\orax.Restock.cfg`:
+The hotkey is a
+[BepInEx `KeyboardShortcut`](https://docs_new.bepinex.dev/api/BepInEx.Configuration.KeyboardShortcut.html),
+defined in `BepInEx\config\orax.Restock.cfg`:
 
 ```ini
 [Input]
 
-## Key combination pressed while a container is open to pull the items matching the selected one into the player inventory. Write the keys joined with '+' in any order; the key that is not a modifier (Shift, Ctrl, Alt, Win) is the one to press. 'None' disables it. Examples: Shift + R, LeftControl + B, B.
-# Setting type: System.String
-# Default value: Shift + R
-Hotkey = Shift + R
+## Key combination pressed while a container is open to pull the items matching the selected one into the player inventory. The main key is written first and the modifiers after it: R + LeftShift is the combination Shift + R. A single key (B) works too, and None disables the hotkey.
+# Setting type: BepInEx.Configuration.KeyboardShortcut
+# Default value: R + LeftShift
+Hotkey = R + LeftShift
 ```
 
-* Any order works: `Shift + R` and `R + Shift` both mean "hold Shift and press R",
-  and the key that is not a modifier is the one that triggers the transfer.
-* Modifiers may be written either as their `KeyCode` names (`LeftShift`,
-  `LeftControl`) or as aliases (`Shift`, `Ctrl`, `Alt`, `Win`); key names are
-  case-insensitive, so `SHIFT+R` and `Shift+r` are both valid.
-* A single key works too (`B`), and `None` disables the hotkey entirely.
+* The **main key comes first**, then the modifiers: `R + LeftShift` is "hold Shift
+  and press R", `LeftControl + LeftShift + B` is "hold Shift and Ctrl and press B".
+  A single key (`B`) is valid too, and `None` disables the hotkey entirely.
+* Key names are the `KeyCode` names (`LeftShift`, `LeftControl`, `LeftAlt`,
+  `Alpha1`, `F5`, ...). BepInEx rejects anything else, disables the hotkey and
+  reports the problem in the log.
+* Like every BepInEx shortcut, the combination only fires when **no other key is
+  held**, so release the movement keys before pressing it.
 * Changes made through the in-game configuration manager apply immediately; changes
   made to the file are picked up on the next launch.
 
