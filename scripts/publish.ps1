@@ -79,11 +79,13 @@ if ($Target.Equals("Debug")) {
         $DeployPath = "$ValheimPath\BepInEx\plugins"
     }
 
-    $plug = New-Item -Type Directory -Path "$DeployPath\$name" -Force
+    # Deploy straight into the target folder (BepInEx\scripts), never into a
+    # subfolder: that is where ScriptEngine picks the plugin up from.
+    $plug = New-Item -Type Directory -Path $DeployPath -Force
     Write-Host "Copy $TargetAssembly to $plug"
-    Copy-Item -Path "$TargetPath\$name.dll" -Destination "$plug" -Force
-    Copy-Item -Path "$TargetPath\$name.pdb" -Destination "$plug" -Force
-    Copy-Item -Path "$TargetPath\$name.dll.mdb" -Destination "$plug" -Force
+    Copy-Item -Path "$TargetPath\$name.dll" -Destination $plug.FullName -Force
+    Copy-Item -Path "$TargetPath\$name.pdb" -Destination $plug.FullName -Force
+    Copy-Item -Path "$TargetPath\$name.dll.mdb" -Destination $plug.FullName -Force
 }
 
 if ($Target.Equals("Release")) {
