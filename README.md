@@ -20,6 +20,10 @@ one of these limits is reached:
   filled, and the transfer stops when your inventory has no room left;
 * the transfer never pushes you over your maximum carry weight.
 
+Once the restock succeeded, the selection is put down automatically: the selected
+item stays in its slot and the next key press needs a new selection (see
+[Behaviour](#behaviour) to keep the selection instead).
+
 Nothing else in the container is touched, and the container is saved normally (it
 must be opened by you, which is what grants you the ownership Valheim requires).
 
@@ -44,6 +48,22 @@ Hotkey = Shift + R
 * A single key works too (`B`), and `None` disables the hotkey entirely.
 * Changes made through the in-game configuration manager apply immediately; changes
   made to the file are picked up on the next launch.
+
+## Behaviour
+
+```ini
+[Behaviour]
+
+## Put the selection down after a restock: the item stays where it was and the next key press needs a new selection. Set it to false to keep the selection and press the key again right away.
+# Setting type: System.Boolean
+# Default value: true
+DeselectAfterRestock = true
+```
+
+When it is on, a successful restock puts the selected item down: nothing follows
+the cursor any more and a new key press reports that no item is selected. A
+transfer that moved nothing (no matching item, full inventory, weight reached)
+keeps the selection, so the same key can be pressed again right after.
 
 ## Messages
 
