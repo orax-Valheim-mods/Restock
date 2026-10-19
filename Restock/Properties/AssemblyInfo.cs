@@ -33,4 +33,3 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion(Restock.Restock.PluginVersion)]
 [assembly: AssemblyFileVersion(Restock.Restock.PluginVersion)]
-
