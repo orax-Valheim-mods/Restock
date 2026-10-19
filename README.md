@@ -9,7 +9,8 @@ into your inventory until your free slots or your maximum carry weight are used 
 1. Open a container.
 2. Select an item with a plain left click, either in the container or in your own
    inventory (the item stays on the cursor, exactly like in vanilla).
-3. Press the hotkey (default: `B`).
+3. Press the hotkey (default: `Shift + R`). It accepts a single key (`B`) or a key
+   combination (`Shift + R`, `Ctrl + B`, ...).
 
 Only the items identical to the selected one are transferred, using the game's own
 stacking rule (same name, quality and world level). The transfer stops as soon as
@@ -29,12 +30,20 @@ The hotkey is defined in `BepInEx\config\orax.Restock.cfg`:
 ```ini
 [Input]
 
-## Key pressed while a container is open to pull the items matching the selected
-## one (plain left click) into the player inventory.
-# Setting type: UnityEngine.KeyCode
-# Default value: B
-Hotkey = B
+## Key combination pressed while a container is open to pull the items matching the selected one into the player inventory. Write the keys joined with '+' in any order; the key that is not a modifier (Shift, Ctrl, Alt, Win) is the one to press. 'None' disables it. Examples: Shift + R, LeftControl + B, B.
+# Setting type: System.String
+# Default value: Shift + R
+Hotkey = Shift + R
 ```
+
+* Any order works: `Shift + R` and `R + Shift` both mean "hold Shift and press R",
+  and the key that is not a modifier is the one that triggers the transfer.
+* Modifiers may be written either as their `KeyCode` names (`LeftShift`,
+  `LeftControl`) or as aliases (`Shift`, `Ctrl`, `Alt`, `Win`); key names are
+  case-insensitive, so `SHIFT+R` and `Shift+r` are both valid.
+* A single key works too (`B`), and `None` disables the hotkey entirely.
+* Changes made through the in-game configuration manager apply immediately; changes
+  made to the file are picked up on the next launch.
 
 # Installation
 
