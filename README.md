@@ -1,18 +1,21 @@
 # Restock
 
-Restock refills your inventory from an open chest in a single key press: select an
-item, press the hotkey, and every identical item found in the container is moved
-into your inventory until your free slots or your maximum carry weight are used up.
+Restock refills your inventory from an open chest in a single key press: point at
+an item (or pick it with a click), press the hotkey, and every identical item found
+in the container is moved into your inventory until your free slots or your maximum
+carry weight are used up.
 
 # Usage
 
 1. Open a container.
-2. Select an item with a plain left click, either in the container or in your own
-   inventory (the item stays on the cursor, exactly like in vanilla).
+2. Pick the item to use as a template: simply point the mouse cursor at it, or
+   select it with a plain left click, either in the container or in your own
+   inventory. Both work by default, see [Selection mode](#selection-mode). A click
+   leaves the item on the cursor, exactly like in vanilla.
 3. Press the hotkey (default: Shift + R, written `R + LeftShift` in the
    configuration). It accepts a single key (`B`) or a key combination.
 
-Only the items identical to the selected one are transferred, using the game's own
+Only the items identical to that template are transferred, using the game's own
 stacking rule (same name, quality and world level). The transfer stops as soon as
 one of these limits is reached:
 
@@ -20,8 +23,8 @@ one of these limits is reached:
   filled, and the transfer stops when your inventory has no room left;
 * the transfer never pushes you over your maximum carry weight.
 
-Once the restock succeeded, the selection is put down automatically: the selected
-item stays in its slot and the next key press needs a new selection (see
+Once the restock succeeded, the selection is put down automatically: nothing stays
+on the cursor and the next key press needs a new template (see
 [Behaviour](#behaviour) to keep the selection instead).
 
 Nothing else in the container is touched, and the container is saved normally (it
@@ -62,12 +65,36 @@ Hotkey = R + LeftShift
 # Setting type: System.Boolean
 # Default value: true
 DeselectAfterRestock = true
+
+## How the item to restock is picked. Click: the item selected with a plain left click. Hover: the item under the mouse cursor when the key is pressed, no click needed. Both: the hovered item when there is one, otherwise the clicked one.
+# Setting type: Restock.SelectionMode
+# Default value: Both
+SelectionMode = Both
 ```
 
-When it is on, a successful restock puts the selected item down: nothing follows
-the cursor any more and a new key press reports that no item is selected. A
-transfer that moved nothing (no matching item, full inventory, weight reached)
-keeps the selection, so the same key can be pressed again right after.
+`DeselectAfterRestock` puts the selected item down after a successful restock:
+nothing follows the cursor any more and a new key press reports that no item is
+selected. A transfer that moved nothing (no matching item, full inventory, weight
+reached) keeps the selection, so the same key can be pressed again right after.
+
+### Selection mode
+
+`SelectionMode` decides where the template item comes from:
+
+* **`Hover`** — the simple workflow: point the cursor at an item in the container
+  or in your own inventory and press the hotkey. No click is needed. Nothing is
+  kept between two presses, so the cursor position at the moment of the key press
+  is what counts.
+* **`Click`** — only a plain left click picks the template, the cursor position is
+  ignored. This is the previous behaviour, unchanged.
+* **`Both`** (default) — the item under the cursor is used when there is one, and
+  the last item selected with a click is used otherwise, for instance when the
+  cursor sits over an empty slot. In other words, hovering wins, clicking is the
+  fallback.
+
+With `Hover`, you may want to reword the `NothingSelected` message (see
+[Messages](#messages)) to match the workflow, for example
+`Restock: point at an item first`.
 
 ## Messages
 
@@ -77,7 +104,7 @@ are read on every press, so the settings apply immediately:
 ```ini
 [Messages]
 
-## Shown when the hotkey is pressed without a selected item. Leave it empty to disable the message.
+## Shown when the hotkey is pressed without a hovered or selected item. Leave it empty to disable the message.
 # Setting type: System.String
 # Default value: Restock: select an item first
 NothingSelected = Restock: select an item first
