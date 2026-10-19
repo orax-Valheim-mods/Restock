@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Jotunn.Configs;
 using UnityEngine;
 
 namespace Restock
@@ -69,8 +68,7 @@ namespace Restock
                 return;
             }
 
-            ButtonConfig button = Restock.Instance.RestockButton;
-            if (button == null || !ZInput.GetButtonDown(button.Name))
+            if (!Restock.Instance.IsHotkeyPressed())
             {
                 return;
             }

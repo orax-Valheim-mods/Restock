@@ -1,6 +1,7 @@
+using System;
+using System.Collections.Generic;
 using BepInEx;
 using BepInEx.Configuration;
-using Jotunn.Configs;
 using Jotunn.Entities;
 using Jotunn.Managers;
 using UnityEngine;
@@ -15,39 +16,233 @@ namespace Restock
         public const string PluginName = "Restock";
         public const string PluginVersion = "0.1.0";
 
+        private const string DefaultHotkey = "Shift + R";
+
         // Available for future localization of the feedback messages.
         // https://valheim-modding.github.io/Jotunn/tutorials/localization.html
         public static CustomLocalization Localization { get; private set; }
 
         internal static Restock Instance { get; private set; }
 
-        /// <summary>Hotkey button, registered through Jotunn so it can be rebound.</summary>
-        internal ButtonConfig RestockButton { get; private set; }
+        /// <summary>Configured key combination, e.g. "Shift + R" or "B".</summary>
+        internal ConfigEntry<string> Hotkey { get; private set; }
+
+        /// <summary>
+        ///     Parsed combination: the last entry is the key to press, the entries before
+        ///     it must be held. Swapped as a whole whenever the setting changes.
+        /// </summary>
+        private KeyCode[] _hotkey = new KeyCode[0];
+
+        /// <summary>Spellings accepted in the configuration besides the KeyCode names.</summary>
+        private static readonly Dictionary<string, KeyCode> HotkeyAliases = new Dictionary<
+            string,
+            KeyCode
+        >(StringComparer.OrdinalIgnoreCase)
+        {
+            { "shift", KeyCode.LeftShift },
+            { "lshift", KeyCode.LeftShift },
+            { "rshift", KeyCode.RightShift },
+            { "ctrl", KeyCode.LeftControl },
+            { "control", KeyCode.LeftControl },
+            { "lctrl", KeyCode.LeftControl },
+            { "rctrl", KeyCode.RightControl },
+            { "alt", KeyCode.LeftAlt },
+            { "lalt", KeyCode.LeftAlt },
+            { "ralt", KeyCode.RightAlt },
+            { "win", KeyCode.LeftWindows },
+            { "windows", KeyCode.LeftWindows },
+            { "meta", KeyCode.LeftWindows },
+            { "esc", KeyCode.Escape },
+            { "enter", KeyCode.Return },
+            { "del", KeyCode.Delete },
+            { "pgup", KeyCode.PageUp },
+            { "pgdn", KeyCode.PageDown },
+        };
 
         private void Awake()
         {
             Instance = this;
             Localization = LocalizationManager.Instance.GetLocalization();
 
-            ConfigEntry<KeyCode> hotkey = Config.Bind(
+            Hotkey = Config.Bind(
                 "Input",
                 "Hotkey",
-                KeyCode.B,
-                "Key pressed while a container is open to pull the items matching the "
-                    + "selected one (plain left click) into the player inventory."
+                DefaultHotkey,
+                "Key combination pressed while a container is open to pull the items "
+                    + "matching the selected one into the player inventory. Write the keys "
+                    + "joined with '+' in any order; the key that is not a modifier "
+                    + "(Shift, Ctrl, Alt, Win) is the one to press. 'None' disables it. "
+                    + "Examples: Shift + R, LeftControl + B, B."
             );
 
-            // ActiveInGUI is required: without it Jotunn refuses the input while a
-            // game GUI such as the inventory is open.
-            RestockButton = new ButtonConfig
-            {
-                Name = "Restock",
-                Config = hotkey,
-                ActiveInGUI = true,
-            };
-            InputManager.Instance.AddButton(PluginGUID, RestockButton);
+            Hotkey.SettingChanged += (sender, args) => ParseHotkey();
+            ParseHotkey();
 
-            Jotunn.Logger.LogInfo($"{PluginName} {PluginVersion} loaded (hotkey: {hotkey.Value})");
+            Jotunn.Logger.LogInfo(
+                $"{PluginName} {PluginVersion} loaded (hotkey: {DescribeHotkey()})"
+            );
+        }
+
+        /// <summary>
+        ///     True on the frame the configured combination is pressed: the main key must
+        ///     just have been pressed while every other key of the combination is held.
+        /// </summary>
+        internal bool IsHotkeyPressed()
+        {
+            KeyCode[] hotkey = _hotkey;
+            if (hotkey.Length == 0)
+            {
+                return false;
+            }
+
+            KeyCode mainKey = hotkey[hotkey.Length - 1];
+            if (!ZInput.GetKeyDown(mainKey, logWarning: false))
+            {
+                return false;
+            }
+
+            for (int i = 0; i < hotkey.Length - 1; i++)
+            {
+                if (!ZInput.GetKey(hotkey[i], logWarning: false))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private void ParseHotkey()
+        {
+            KeyCode[] hotkey = ParseKeyCombination(Hotkey.Value);
+            if (hotkey == null)
+            {
+                Jotunn.Logger.LogWarning(
+                    $"Invalid hotkey \"{Hotkey.Value}\", using \"{DefaultHotkey}\" instead. "
+                        + "Key names such as Shift, LeftControl, A or F5 are joined with '+'."
+                );
+                hotkey = ParseKeyCombination(DefaultHotkey);
+            }
+            _hotkey = hotkey ?? new KeyCode[0];
+        }
+
+        /// <summary>
+        ///     Parses a combination like "Shift + R" into an array whose last entry is the
+        ///     key to press, or an empty array when the hotkey is disabled. Returns null
+        ///     when the value cannot be understood.
+        /// </summary>
+        private static KeyCode[] ParseKeyCombination(string value)
+        {
+            if (
+                string.IsNullOrWhiteSpace(value)
+                || value.Trim().Equals("None", StringComparison.OrdinalIgnoreCase)
+            )
+            {
+                return new KeyCode[0];
+            }
+
+            List<KeyCode> keys = new List<KeyCode>();
+            string[] tokens = value.Split(
+                new[] { '+', ',', ';', '|', ' ', '\t' },
+                StringSplitOptions.RemoveEmptyEntries
+            );
+
+            foreach (string token in tokens)
+            {
+                KeyCode key = ParseKey(token);
+                if (key == KeyCode.None)
+                {
+                    return null;
+                }
+                if (!keys.Contains(key))
+                {
+                    keys.Add(key);
+                }
+            }
+
+            if (keys.Count == 0)
+            {
+                return new KeyCode[0];
+            }
+
+            // Whatever the order in the configuration, the key that is not a modifier is
+            // the one the player presses: "Shift + R" and "R + Shift" behave the same.
+            int mainIndex = 0;
+            for (int i = 0; i < keys.Count; i++)
+            {
+                if (!IsModifierKey(keys[i]))
+                {
+                    mainIndex = i;
+                    break;
+                }
+            }
+
+            List<KeyCode> combination = new List<KeyCode>(keys.Count);
+            for (int i = 0; i < keys.Count; i++)
+            {
+                if (i != mainIndex)
+                {
+                    combination.Add(keys[i]);
+                }
+            }
+            combination.Add(keys[mainIndex]);
+            return combination.ToArray();
+        }
+
+        private static KeyCode ParseKey(string token)
+        {
+            if (HotkeyAliases.TryGetValue(token, out KeyCode key))
+            {
+                return key;
+            }
+
+            // The digit keys are written "1", while their KeyCode name is "Alpha1".
+            if (token.Length == 1 && token[0] >= '0' && token[0] <= '9')
+            {
+                token = "Alpha" + token;
+            }
+
+            KeyCode parsed;
+            if (Enum.TryParse(token, true, out parsed) && Enum.IsDefined(typeof(KeyCode), parsed))
+            {
+                return parsed;
+            }
+            return KeyCode.None;
+        }
+
+        private static bool IsModifierKey(KeyCode key)
+        {
+            switch (key)
+            {
+                case KeyCode.LeftShift:
+                case KeyCode.RightShift:
+                case KeyCode.LeftControl:
+                case KeyCode.RightControl:
+                case KeyCode.LeftAlt:
+                case KeyCode.RightAlt:
+                case KeyCode.LeftCommand:
+                case KeyCode.RightCommand:
+                case KeyCode.LeftWindows:
+                case KeyCode.RightWindows:
+                case KeyCode.AltGr:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private string DescribeHotkey()
+        {
+            if (_hotkey.Length == 0)
+            {
+                return "none";
+            }
+
+            string[] names = new string[_hotkey.Length];
+            for (int i = 0; i < _hotkey.Length; i++)
+            {
+                names[i] = _hotkey[i].ToString();
+            }
+            return string.Join(" + ", names);
         }
 
         private void Update()
