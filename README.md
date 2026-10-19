@@ -45,6 +45,39 @@ Hotkey = Shift + R
 * Changes made through the in-game configuration manager apply immediately; changes
   made to the file are picked up on the next launch.
 
+## Messages
+
+The four messages shown in the middle of the screen are configurable as well. They
+are read on every press, so the settings apply immediately:
+
+```ini
+[Messages]
+
+## Shown when the hotkey is pressed without a selected item. Leave it empty to disable the message.
+# Setting type: System.String
+# Default value: Restock: select an item first
+NothingSelected = Restock: select an item first
+
+## Shown when the container holds no item identical to the selected one. Leave it empty to disable the message.
+# Setting type: System.String
+# Default value: Restock: no matching items in the container
+NoMatchingItems = Restock: no matching items in the container
+
+## Shown when the transfer stops because your inventory has no room left. Leave it empty to disable the message.
+# Setting type: System.String
+# Default value: Restock: not enough room in your inventory
+NoSpace = Restock: not enough room in your inventory
+
+## Shown when the transfer stops because it would exceed your maximum carry weight. Leave it empty to disable the message.
+# Setting type: System.String
+# Default value: Restock: that would make you overburdened
+TooHeavy = Restock: that would make you overburdened
+```
+
+An empty value keeps the message off entirely. This section is also the way to
+translate the mod: write the messages in your own language. Keep them plain text,
+a leading `$` would be looked up as a game localization token instead.
+
 # Installation
 
 This mod is client-side only. You do not need to install it on the server.
