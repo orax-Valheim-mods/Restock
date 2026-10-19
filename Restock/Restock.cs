@@ -76,9 +76,10 @@ namespace Restock
                 "Behaviour",
                 "DeselectAfterRestock",
                 true,
-                "Put the selection down after a restock: the item stays where it was and "
-                    + "the next key press needs a new selection. Set it to false to keep "
-                    + "the selection and press the key again right away."
+                "Put the selection down when the restock key is pressed, whatever the "
+                    + "outcome: the item stays where it was and the next press needs a new "
+                    + "selection. Set it to false to keep the selection and press the key "
+                    + "again right away."
             );
 
             ItemSelectionMode = Config.Bind(

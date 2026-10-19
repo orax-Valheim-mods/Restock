@@ -91,6 +91,19 @@ namespace Restock
                         player.Message(MessageHud.MessageType.Center, message);
                     }
                 }
+
+                // A restock that picked a template consumes it, whatever the outcome, so
+                // the next press needs a new one. NothingSelected has no template to put
+                // down and a cancelled restock reports nothing: both are left alone.
+                if (
+                    result != Result.Cancelled
+                    && result != Result.NothingSelected
+                    && Restock.Instance != null
+                    && Restock.Instance.DeselectAfterRestock.Value
+                )
+                {
+                    DropSelection(gui);
+                }
             }
             catch (Exception ex)
             {
@@ -239,10 +252,6 @@ namespace Restock
                 $"Restocked {moved} x {_selected.m_shared.m_name} "
                     + $"from '{containerInventory.GetName()}'"
             );
-            if (Restock.Instance != null && Restock.Instance.DeselectAfterRestock.Value)
-            {
-                DropSelection(gui);
-            }
             return Result.Moved;
         }
 
