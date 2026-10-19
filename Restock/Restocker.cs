@@ -237,6 +237,10 @@ namespace Restock
                 $"Restocked {moved} x {_selected.m_shared.m_name} "
                     + $"from '{containerInventory.GetName()}'"
             );
+            if (Restock.Instance != null && Restock.Instance.DeselectAfterRestock.Value)
+            {
+                DropSelection(gui);
+            }
             return Result.Moved;
         }
 
@@ -323,9 +327,34 @@ namespace Restock
         }
 
         /// <summary>
+        ///     Puts down what the cursor holds: as in vanilla, the item stays in its
+        ///     inventory slot and only the drag visual is cleared.
+        /// </summary>
+        private static void DropSelection(InventoryGui gui)
+        {
+            _selected = null;
+            ClearDrag(gui);
+        }
+
+        /// <summary>
+        ///     Clears the drag state, replicating the clearing branch of the private
+        ///     InventoryGui.SetupDragItem().
+        /// </summary>
+        private static void ClearDrag(InventoryGui gui)
+        {
+            if (gui.m_dragGo != null)
+            {
+                UnityEngine.Object.Destroy(gui.m_dragGo);
+                gui.m_dragGo = null;
+            }
+            gui.m_dragItem = null;
+            gui.m_dragInventory = null;
+            gui.m_dragAmount = 0;
+        }
+
+        /// <summary>
         ///     Releases the item held by the cursor when it just left the inventory it was
-        ///     picked up from, so no ghost item keeps following the mouse. Replicates the
-        ///     clearing branch of the private InventoryGui.SetupDragItem().
+        ///     picked up from, so no ghost item keeps following the mouse.
         /// </summary>
         private static void ReleaseStaleDrag(InventoryGui gui)
         {
@@ -339,14 +368,7 @@ namespace Restock
                 return;
             }
 
-            if (gui.m_dragGo != null)
-            {
-                UnityEngine.Object.Destroy(gui.m_dragGo);
-                gui.m_dragGo = null;
-            }
-            gui.m_dragItem = null;
-            gui.m_dragInventory = null;
-            gui.m_dragAmount = 0;
+            ClearDrag(gui);
         }
 
         private static void Rebind(InventoryGui gui)

@@ -41,6 +41,9 @@ namespace Restock
         /// <summary>Center message shown when the transfer stops on the weight limit.</summary>
         internal ConfigEntry<string> MessageTooHeavy { get; private set; }
 
+        /// <summary>Whether the selection is put down once the restock succeeded.</summary>
+        internal ConfigEntry<bool> DeselectAfterRestock { get; private set; }
+
         /// <summary>
         ///     Parsed combination: the last entry is the key to press, the entries before
         ///     it must be held. Swapped as a whole whenever the setting changes.
@@ -91,6 +94,15 @@ namespace Restock
 
             Hotkey.SettingChanged += (sender, args) => ParseHotkey();
             ParseHotkey();
+
+            DeselectAfterRestock = Config.Bind(
+                "Behaviour",
+                "DeselectAfterRestock",
+                true,
+                "Put the selection down after a restock: the item stays where it was and "
+                    + "the next key press needs a new selection. Set it to false to keep "
+                    + "the selection and press the key again right away."
+            );
 
             MessageNothingSelected = Config.Bind(
                 "Messages",
