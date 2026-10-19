@@ -5,10 +5,11 @@ using UnityEngine;
 namespace Restock
 {
     /// <summary>
-    ///     Restock action: while a container is open, the item selected with a plain left
-    ///     click (either in the container or in the player inventory) is used as a template,
-    ///     and every matching item found in the container is moved into the player inventory
-    ///     until the free slots or the maximum carry weight are exhausted.
+    ///     Restock action: while a container is open, an item is taken as a template and
+    ///     every matching item found in the container is moved into the player inventory
+    ///     until the free slots or the maximum carry weight are exhausted. The template is
+    ///     the item under the mouse cursor, the item picked with a plain left click, or
+    ///     both, following the configured selection mode.
     /// </summary>
     internal static class Restocker
     {
@@ -103,6 +104,7 @@ namespace Restock
             Container container
         )
         {
+            _selected = ResolveSelection(gui, player, container);
             if (_selected == null)
             {
                 return Result.NothingSelected;
@@ -242,6 +244,72 @@ namespace Restock
                 DropSelection(gui);
             }
             return Result.Moved;
+        }
+
+        /// <summary>
+        ///     The item used as a template by this restock, following the configured
+        ///     selection mode: the item under the mouse cursor, the item picked with a plain
+        ///     left click, or the hovered one when there is one and the clicked one
+        ///     otherwise. Returns null when neither mode has anything to offer.
+        /// </summary>
+        private static ItemDrop.ItemData ResolveSelection(
+            InventoryGui gui,
+            Player player,
+            Container container
+        )
+        {
+            Restock plugin = Restock.Instance;
+            SelectionMode mode =
+                plugin == null ? SelectionMode.Click : plugin.ItemSelectionMode.Value;
+            if (mode == SelectionMode.Click)
+            {
+                return _selected;
+            }
+
+            ItemDrop.ItemData hovered = FindHoveredItem(
+                gui.ContainerGrid,
+                container.GetInventory()
+            );
+            if (hovered == null)
+            {
+                hovered = FindHoveredItem(gui.m_playerGrid, player.GetInventory());
+            }
+            if (hovered != null)
+            {
+                return hovered;
+            }
+            return mode == SelectionMode.Hover ? null : _selected;
+        }
+
+        /// <summary>
+        ///     The item whose slot is under the mouse cursor, mirroring the private
+        ///     InventoryGrid.GetHoveredElement() the vanilla highlight uses.
+        /// </summary>
+        private static ItemDrop.ItemData FindHoveredItem(InventoryGrid grid, Inventory inventory)
+        {
+            if (grid == null || inventory == null)
+            {
+                return null;
+            }
+
+            foreach (InventoryElement element in grid.m_elements)
+            {
+                if (element == null)
+                {
+                    continue;
+                }
+
+                RectTransform slot = element.GetElementRectTransform();
+                Vector2 point = slot.InverseTransformPoint(ZInput.pointerPosition);
+                if (!slot.rect.Contains(point))
+                {
+                    continue;
+                }
+
+                Vector2i pos = element.Position;
+                return inventory.GetItemAt(pos.x, pos.y);
+            }
+            return null;
         }
 
         /// <summary>

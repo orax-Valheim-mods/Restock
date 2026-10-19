@@ -6,6 +6,19 @@ using UnityEngine;
 
 namespace Restock
 {
+    /// <summary>How the item used as a template by the restock is picked.</summary>
+    internal enum SelectionMode
+    {
+        /// <summary>The item selected with a plain left click.</summary>
+        Click,
+
+        /// <summary>The item under the mouse cursor when the key is pressed.</summary>
+        Hover,
+
+        /// <summary>The hovered item when there is one, otherwise the clicked one.</summary>
+        Both,
+    }
+
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
     [BepInDependency(Jotunn.Main.ModGuid)]
     internal class Restock : BaseUnityPlugin
@@ -40,6 +53,9 @@ namespace Restock
         /// <summary>Whether the selection is put down once the restock succeeded.</summary>
         internal ConfigEntry<bool> DeselectAfterRestock { get; private set; }
 
+        /// <summary>How the item to restock is picked: click, hover or both.</summary>
+        internal ConfigEntry<SelectionMode> ItemSelectionMode { get; private set; }
+
         private void Awake()
         {
             Instance = this;
@@ -65,11 +81,21 @@ namespace Restock
                     + "the selection and press the key again right away."
             );
 
+            ItemSelectionMode = Config.Bind(
+                "Behaviour",
+                "SelectionMode",
+                SelectionMode.Both,
+                "How the item to restock is picked. Click: the item selected with a plain "
+                    + "left click. Hover: the item under the mouse cursor when the key is "
+                    + "pressed, no click needed. Both: the hovered item when there is one, "
+                    + "otherwise the clicked one."
+            );
+
             MessageNothingSelected = Config.Bind(
                 "Messages",
                 "NothingSelected",
                 "Restock: select an item first",
-                "Shown when the hotkey is pressed without a selected item." + MessageHint
+                "Shown when the hotkey is pressed without a hovered or selected item." + MessageHint
             );
             MessageNoMatchingItems = Config.Bind(
                 "Messages",
