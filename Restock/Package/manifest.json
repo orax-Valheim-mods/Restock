@@ -1,10 +1,10 @@
 ﻿{
-  "name": "restock",
+  "name": "Restock",
   "description": "Pull the items matching the selected one from an open container into your inventory, limited by free slots and maximum carry weight.",
   "version_number": "0.1.0",
-  "website_url": "",
+  "website_url": "https://github.com/orax-Valheim-mods/Restock",
   "dependencies": [
-    "denikson-BepInExPack_Valheim-5.4.2333",
+    "denikson-BepInExPack_Valheim-5.4.2351",
     "ValheimModding-Jotunn-2.30.2"
   ]
 }
