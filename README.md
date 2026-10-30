@@ -30,9 +30,9 @@ You can install the mod using Vortex or Gale.
 
 ## Manual
 
-Install [BepInExPack for Valheim](https://thunderstore.io/c/valheim/p/denikson/BepInExPack_Valheim/),
-then copy `Restock.dll` to `Steam\steamapps\common\Valheim\BepInEx\plugins\Restock\`.
+Install BepInExPack for Valheim then copy `Restock.dll` to
+`Steam\steamapps\common\Valheim\BepInEx\plugins\Restock\`.
 
 # Misc.
 
-Source code: [GitHub repository](https://github.com/orax-Valheim-mods/)
+GitHub repositories of my Valheim mods: https://github.com/orax-Valheim-mods/
