@@ -107,7 +107,7 @@ namespace Restock
             }
             catch (Exception ex)
             {
-                Jotunn.Logger.LogError($"Restock failed: {ex}");
+                Restock.Log.LogError($"Restock failed: {ex}");
             }
         }
 
@@ -125,9 +125,7 @@ namespace Restock
             if (!container.IsOwner())
             {
                 // Another peer owns the chest: writing into it would not be saved.
-                Jotunn.Logger.LogWarning(
-                    "Restock: container is not owned by this player, cancelled"
-                );
+                Restock.Log.LogWarning("Restock: container is not owned by this player, cancelled");
                 return Result.Cancelled;
             }
 
@@ -248,7 +246,7 @@ namespace Restock
 
             ReleaseStaleDrag(gui);
             gui.m_moveItemEffects.Create(gui.transform.position, Quaternion.identity);
-            Jotunn.Logger.LogInfo(
+            Restock.Log.LogInfo(
                 $"Restocked {moved} x {_selected.m_shared.m_name} "
                     + $"from '{containerInventory.GetName()}'"
             );

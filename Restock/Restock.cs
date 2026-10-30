@@ -1,7 +1,6 @@
 using BepInEx;
 using BepInEx.Configuration;
-using Jotunn.Entities;
-using Jotunn.Managers;
+using BepInEx.Logging;
 using UnityEngine;
 
 namespace Restock
@@ -20,7 +19,6 @@ namespace Restock
     }
 
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
-    [BepInDependency(Jotunn.Main.ModGuid)]
     internal class Restock : BaseUnityPlugin
     {
         public const string PluginGUID = "orax.Restock";
@@ -29,9 +27,8 @@ namespace Restock
 
         private const string MessageHint = " Leave it empty to disable the message.";
 
-        // Available for future localization of the feedback messages.
-        // https://valheim-modding.github.io/Jotunn/tutorials/localization.html
-        public static CustomLocalization Localization { get; private set; }
+        /// <summary>Plugin logger, also used by the static Restocker.</summary>
+        internal static ManualLogSource Log { get; private set; }
 
         internal static Restock Instance { get; private set; }
 
@@ -58,8 +55,8 @@ namespace Restock
 
         private void Awake()
         {
+            Log = Logger;
             Instance = this;
-            Localization = LocalizationManager.Instance.GetLocalization();
 
             Hotkey = Config.Bind(
                 "Input",
@@ -121,7 +118,7 @@ namespace Restock
                     + MessageHint
             );
 
-            Jotunn.Logger.LogInfo(
+            Log.LogInfo(
                 $"{PluginName} {PluginVersion} loaded (hotkey: {Hotkey.Value.Serialize()})"
             );
         }
